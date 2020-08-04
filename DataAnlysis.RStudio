@@ -107,7 +107,7 @@ DataSet[,c("W1973","W1975","W1977","W1979","W1981","W1983","W1985","W1987","W198
                    ] > 999000 ]<-0
 
 ###
-MfgSet03 <- DataSet %>% filter(ER21146 >= 107 & ER21146<=399)
+MfgSet03 <- DataSet  %>% filter(ER21146 >= 107 & ER21146<=399)
 MfgSet93 <-DataSet %>% filter(V22457>=107& V22457<=398)
 MfgSet95 <-DataSet %>% filter(ER6858>=107& ER6858<=398)
 MfgSet87 <- DataSet %>% filter(V14155 >= 107 & V14155<=398)
