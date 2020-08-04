@@ -1,0 +1,502 @@
+library(dplyr)
+library(foreign)
+library(ggplot2)
+setwd("C:/Users/Pawel/Desktop/Downloads")
+Inlfation <- read.csv("Inflation.csv")
+Inlfation$Adjust <- 100/Inlfation$GDPDEF
+rownames(Inlfation)<-c(1968:2018)
+DataSet<- read.dbf("J264609.dbf", as.is = FALSE)
+setwd("C:/Users/Pawel/Desktop/PSID")
+NTRRate <- read.csv('NTRRate.csv')
+Beta<-0.98
+##Renaming block
+colnames(DataSet)[colnames(DataSet)=="ER24117"] <- "W2003"
+colnames(DataSet)[colnames(DataSet)=="ER27913"] <- "W2005"
+colnames(DataSet)[colnames(DataSet)=="ER40903"] <- "W2007"
+colnames(DataSet)[colnames(DataSet)=="ER46811"] <- "W2009"
+colnames(DataSet)[colnames(DataSet)=="ER52219"] <- "W2011"
+colnames(DataSet)[colnames(DataSet)=="ER58020"] <- "W2013"
+colnames(DataSet)[colnames(DataSet)=="ER65200"] <- "W2015"
+colnames(DataSet)[colnames(DataSet)=="ER71277"] <- "W2017"
+colnames(DataSet)[colnames(DataSet)=="ER21017"] <- "Age2003"
+
+colnames(DataSet)[colnames(DataSet)=="V14114"] <- "Age1987"
+colnames(DataSet)[colnames(DataSet)=="V13898"] <- "W1987"
+colnames(DataSet)[colnames(DataSet)=="V16413"] <- "W1989"
+colnames(DataSet)[colnames(DataSet)=="V19129"] <- "W1991"
+colnames(DataSet)[colnames(DataSet)=="V21739"] <- "W1993"
+colnames(DataSet)[colnames(DataSet)=="ER6962"] <- "W1995"
+colnames(DataSet)[colnames(DataSet)=="ER12196"] <- "W1997"
+colnames(DataSet)[colnames(DataSet)=="ER16493"] <- "W1999"
+colnames(DataSet)[colnames(DataSet)=="ER20425"] <- "W2001"
+
+colnames(DataSet)[colnames(DataSet)=="V3095"] <- "Age1973"
+colnames(DataSet)[colnames(DataSet)=="V3046"] <- "W1973"
+colnames(DataSet)[colnames(DataSet)=="V3858"] <- "W1975"
+colnames(DataSet)[colnames(DataSet)=="V5283"] <- "W1977"
+colnames(DataSet)[colnames(DataSet)=="V6391"] <- "W1979"
+colnames(DataSet)[colnames(DataSet)=="V7573"] <- "W1981"
+colnames(DataSet)[colnames(DataSet)=="V8873"] <- "W1983"
+colnames(DataSet)[colnames(DataSet)=="V11397"] <- "W1985"
+colnames(DataSet)[colnames(DataSet)=="V7658"] <- "Age1981"
+
+colnames(DataSet)[colnames(DataSet)=="V1008"] <- "Age1969"
+colnames(DataSet)[colnames(DataSet)=="V699"] <- "W1969"
+colnames(DataSet)[colnames(DataSet)=="V1892"] <- "W1971"
+colnames(DataSet)[colnames(DataSet)=="V5350"] <- "Age1977"
+colnames(DataSet)[colnames(DataSet)=="ER5006"] <- "Age1995"
+colnames(DataSet)[colnames(DataSet)=="V22406"] <- "Age1993"
+
+colnames(DataSet)[colnames(DataSet)=="V1916"] <- "UI1971"
+colnames(DataSet)[colnames(DataSet)=="V3070"] <- "UI1973"
+colnames(DataSet)[colnames(DataSet)=="V3882"] <- "UI1975"
+colnames(DataSet)[colnames(DataSet)=="V5308"] <- "UI1977"
+colnames(DataSet)[colnames(DataSet)=="V6419"] <- "UI1979"
+colnames(DataSet)[colnames(DataSet)=="V7601"] <- "UI1981"
+colnames(DataSet)[colnames(DataSet)=="V8902"] <- "UI1983"
+colnames(DataSet)[colnames(DataSet)=="V11440"] <- "UI1985"
+
+colnames(DataSet)[colnames(DataSet)=="V13941"] <- "UI1987"
+colnames(DataSet)[colnames(DataSet)=="V16456"] <- "UI1989"
+colnames(DataSet)[colnames(DataSet)=="V19172"] <- "UI1991"
+colnames(DataSet)[colnames(DataSet)=="V22108"] <- "UI1993"
+colnames(DataSet)[colnames(DataSet)=="ER6372"] <- "UI1995"
+colnames(DataSet)[colnames(DataSet)=="ER11383"] <- "UI1997"
+colnames(DataSet)[colnames(DataSet)=="ER14649"] <- "UI1999"
+colnames(DataSet)[colnames(DataSet)=="ER18815"] <- "UI2001"
+
+colnames(DataSet)[colnames(DataSet)=="ER22185"] <- "UI2003"
+colnames(DataSet)[colnames(DataSet)=="ER26166"] <- "UI2005"
+colnames(DataSet)[colnames(DataSet)=="ER37184"] <- "UI2007"
+colnames(DataSet)[colnames(DataSet)=="ER43175"] <- "UI2009"
+colnames(DataSet)[colnames(DataSet)=="ER48500"] <- "UI2011"
+colnames(DataSet)[colnames(DataSet)=="ER54194"] <- "UI2013"
+colnames(DataSet)[colnames(DataSet)=="ER61236"] <- "UI2015"
+colnames(DataSet)[colnames(DataSet)=="ER67288"] <- "UI2017"
+
+###Over-write NAs with 0s
+DataSet[c("UI2003","UI2005","UI2007","UI2009","UI2011","UI2013","UI2015","UI2017","UI1971","UI1973","UI1975","UI1977","UI1979","UI1981","UI1983","UI1985")][is.na(DataSet[c(
+  "UI2003","UI2005","UI2007","UI2009","UI2011","UI2013","UI2015","UI2017",
+  "UI1971","UI1973","UI1975","UI1977","UI1979","UI1981","UI1983","UI1985")])] <- 0
+DataSet[c("UI1987","UI1989","UI1991","UI1993","UI1995","UI1997","UI1999","UI2001")][is.na(DataSet[c(
+  "UI1987","UI1989","UI1991","UI1993","UI1995","UI1997","UI1999","UI2001")])] <- 0
+
+
+#DataSet[c("W2003","W2005","W2007","W2009","W2011","W2013","W2015","W2017")][is.na(DataSet[c(
+#  "W2003","W2005","W2007","W2009","W2011","W2013","W2015","W2017")])] <- 0
+
+#DataSet[c("W1987","W1989","W1991","W1993","W1995","W1997","W1999","W2001")][is.na(DataSet[c(
+#  "W1987","W1989","W1991","W1993","W1995","W1997","W1999","W2001")])] <- 0
+
+#DataSet[c("W1973","W1975","W1977","W1979","W1981","W1983","W1985")][is.na(DataSet[c("W1973",
+#                                "W1975","W1977","W1979","W1981","W1983","W1985")])] <- 0
+
+##Remove DKs in UI
+DataSet[,c("UI1987","UI1989","UI1991","UI1993","UI1995","UI1997","UI1999","UI2001",
+           "UI2003","UI2005","UI2007","UI2009","UI2011","UI2013","UI2015","UI2017",
+           "UI1971","UI1973","UI1975","UI1977","UI1979","UI1981","UI1983","UI1985")
+        ][ DataSet[,c("UI1987","UI1989","UI1991","UI1993","UI1995","UI1997","UI1999","UI2001",
+                      "UI2003","UI2005","UI2007","UI2009","UI2011","UI2013","UI2015","UI2017",
+                      "UI1971","UI1973","UI1975","UI1977","UI1979","UI1981","UI1983","UI1985")
+                   ] > 99000 ]<-0
+
+DataSet[,c("W1973","W1975","W1977","W1979","W1981","W1983","W1985","W1987","W1989","W1991","W1993",
+           "W1995","W1997","W1999","W2001","W2003","W2005","W2007","W2009","W2011","W2013","W2015","W2017")
+        ][ DataSet[,c("W1973","W1975","W1977","W1979","W1981","W1983","W1985","W1987","W1989","W1991","W1993",
+                      "W1995","W1997","W1999","W2001","W2003","W2005","W2007","W2009","W2011","W2013","W2015","W2017")
+                   ] > 999000 ]<-0
+
+###
+MfgSet03 <- DataSet %>% filter(ER21146 >= 107 & ER21146<=399)
+MfgSet93 <-DataSet %>% filter(V22457>=107& V22457<=398)
+MfgSet95 <-DataSet %>% filter(ER6858>=107& ER6858<=398)
+MfgSet87 <- DataSet %>% filter(V14155 >= 107 & V14155<=398)
+MfgSet81 <- DataSet %>% filter(V7713 >= 107 & V7713<=398)
+MfgSet73 <- DataSet %>% filter(V3116_A >= 107 & V3116_A<=398)
+MfgSet69 <- DataSet %>% filter(V640_B >= 107 & V640_B<=398)
+Rest03 <- DataSet %>% filter(ER21146 < 107 | ER21146 > 399)
+Rest87 <- DataSet %>% filter(V14155 < 107 | V14155 > 399)
+Rest81 <- DataSet %>% filter(V7713 < 107 | V7713>398)
+Rest73 <- DataSet %>% filter(V3116_A < 107 | V3116_A>398)
+Rest69 <- DataSet %>% filter(V640_B < 107 | V640_B>398)
+Beta<-0.97
+
+#%>% filter(ER21018==1 & ER23426==1) +0.5*W1999*Inlfation[1999-1968,"Adjust"]
+MfgSet2003 <- MfgSet03 %>% 
+                  mutate(SumWage = W2003*Inlfation[2003-1968,"Adjust"]+
+                                Beta*W2005*Inlfation[2005-1968,"Adjust"]+
+                                  (Beta^2)*W2007*Inlfation[2007-1968,"Adjust"]+
+                                  (Beta^3)*W2009*Inlfation[2009-1968,"Adjust"]+
+                                  (Beta^4)*W2011*Inlfation[2011-1968,"Adjust"]+
+                                  (Beta^5)*W2013*Inlfation[2013-1968,"Adjust"]+
+                                  (Beta^6)*W2015*Inlfation[2015-1968,"Adjust"]+
+                                  (Beta^7)*W2017*Inlfation[2017-1968,"Adjust"],
+                         Prior_Wage=0.5*W2001*Inlfation[2001-1968,"Adjust"]+0.5*W1999*Inlfation[1999-1968,"Adjust"],
+                              Age_Group = cut(Age2003,c(18,25,30,35,40,45,50,55,60)))
+
+MfgSet2003$NTRRate = NTRRate$NTR.GAP[match(MfgSet2003$ER21146,NTRRate$Census.2000)]
+MfgSet2003$ER47480[is.na(MfgSet2003$ER47480)] <-298
+MfgSet2003$ER47480[MfgSet2003$ER47480==0] <-298
+MfgSet2003$NTRRate_2011 = NTRRate$NTR.GAP[match(MfgSet2003$ER47480,NTRRate$Census.2000)]
+
+#MfgSet2003$NTRRate[is.na(MfgSet2003$NTRRate)] <-0
+MfgSet2003$NTR_Group <- ifelse(MfgSet2003$NTRRate>0.35, 1, 0)
+
+MfgSet2003$NTR_Group_2011 <- ifelse(MfgSet2003$NTRRate_2011>0.35, 1, 0)
+#which(MfgSet2003$W2003 >= 2000000)
+#which(MfgSet2003$SumWage >= 1000000)
+#MfgSet2003 <- MfgSet2003 %>% filter(SumWage<1000000)
+MfgSet2003 <- MfgSet2003 %>% filter(SumWage !=0)
+MfgSet2003 <- MfgSet2003 %>% filter(Prior_Wage !=0)
+#MfgSet2003 <- MfgSet2003 %>% filter(SumWage>100000)
+MfgSet2003NA <- MfgSet2003[!is.na(MfgSet2003$SumWage), ]
+MfgSet2003NA <- MfgSet2003NA[!is.na(MfgSet2003NA$Prior_Wage), ]
+MfgSet2003NA$S_P <- MfgSet2003NA$SumWage/MfgSet2003NA$Prior_Wage
+MfgSet2003NA <- MfgSet2003NA %>% filter(S_P < 30)
+SumStats2003 <- MfgSet2003NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n(),Var=sd(SumWage))
+SumStats2003 <- MfgSet2003NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage/Prior_Wage),N=n(),Var=sd(SumWage/Prior_Wage))
+SumStats2003
+
+#%>% filter(ER21018==1 & ER23426==1)
+MfgSet2003UI <- MfgSet03 %>% filter(ER21018==1 & ER23426==1)  %>% mutate(SumWage = (W2003+UI2003)*Inlfation[2003-1968,"Adjust"]+
+                                                                        Beta*(W2005+UI2005)*Inlfation[2005-1968,"Adjust"]+
+                                                                        (Beta^2)*(W2007+UI2007)*Inlfation[2007-1968,"Adjust"]+
+                                                                        (Beta^3)*(W2009+UI2009)*Inlfation[2009-1968,"Adjust"]+
+                                                                        (Beta^4)*(W2011+UI2011)*Inlfation[2011-1968,"Adjust"]+
+                                                                        (Beta^5)*(W2013+UI2013)*Inlfation[2013-1968,"Adjust"]+
+                                                                        (Beta^6)*(W2015+UI2015)*Inlfation[2015-1968,"Adjust"]+
+                                                                        (Beta^7)*(W2017+UI2017)*Inlfation[2017-1968,"Adjust"],
+                                                                      Age_Group = cut(Age2003,c(24,30,35,40,45,50,55,60)))
+
+MfgSet2003UI$NTRRate = NTRRate$NTR.GAP[match(MfgSet2003UI$ER21146,NTRRate$Census.2000)]
+MfgSet2003UI$NTR_Group <- ifelse(MfgSet2003UI$NTRRate>0.35, 1, 0)
+
+which(MfgSet2003UI$SumWage >= 1000000)
+which(MfgSet2003UI$SumWage == 0)
+#MfgSet2003UI <- MfgSet2003UI[-c(80,118,217,249,415,453,454,497),]
+MfgSet2003UI <- MfgSet2003UI %>% filter(SumWage !=0)
+MfgSet2003UI <- MfgSet2003UI %>% filter(SumWage < 1000000)
+MfgSet2003UINA <- MfgSet2003UI[!is.na(MfgSet2003UI$SumWage), ]
+SumStats2003UI <- MfgSet2003UINA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage), Med=median(SumWage),N=n(),
+                                                                       Var=sd(SumWage))
+SumStats2003UI
+
+
+MfgSet1993 <- MfgSet93  %>% filter(V10420==1 & V9408==1)%>% mutate(SumWage = W1993*Inlfation[1993-1968,"Adjust"]+
+                                                                    Beta*W1995*Inlfation[1995-1968,"Adjust"]+
+                                                                    (Beta^2)*W1997*Inlfation[1997-1968,"Adjust"]+
+                                                                    (Beta^3)*W1999*Inlfation[1999-1968,"Adjust"]+
+                                                                    (Beta^4)*W2001*Inlfation[2001-1968,"Adjust"]+
+                                                                    (Beta^5)*W2003*Inlfation[2003-1968,"Adjust"]+
+                                                                    (Beta^6)*W2005*Inlfation[2005-1968,"Adjust"]+
+                                                                    (Beta^7)*W2007*Inlfation[2007-1968,"Adjust"],
+                                                                  Age_Group = cut(Age1993,c(24,30,35,40,45,50,55,60)))
+
+MfgSet1993$NTRRate = NTRRate$NTR.GAP[match(MfgSet1993$V22457,NTRRate$Census.1970)]
+#MfgSet2003$NTRRate[is.na(MfgSet2003$NTRRate)] <-0
+MfgSet1993$NTR_Group <- ifelse(MfgSet1993$NTRRate>0.2, 1, 0)
+
+MfgSet1993 <- MfgSet1993 %>% filter(SumWage<1000000)
+MfgSet1993 <- MfgSet1993 %>% filter(SumWage !=0)
+MfgSet1993NA <- MfgSet1993[!is.na(MfgSet1993$SumWage), ]
+SumStats1993 <- MfgSet1993NA %>% group_by(Age_Group,NTR_Group) %>% summarize(Mean = mean(SumWage),N=n(),Var=sd(SumWage))
+SumStats1993
+
+
+
+
+Beta<-0.98
+# %>% filter(V14115==1 & V14612==1) 0.5*W1983*Inlfation[1983-1968,"Adjust"]
+MfgSet1987 <- MfgSet87 %>% mutate(SumWage = W1987*Inlfation[1987-1968,"Adjust"]+
+                                Beta*W1989*Inlfation[1989-1968,"Adjust"]+
+                                  (Beta^2)*W1991*Inlfation[1991-1968,"Adjust"]+
+                                  (Beta^3)*W1993*Inlfation[1993-1968,"Adjust"]+
+                                  (Beta^4)*W1995*Inlfation[1995-1968,"Adjust"]+
+                                  (Beta^5)*W1997*Inlfation[1997-1968,"Adjust"]+
+                                  (Beta^6)*W1999*Inlfation[1999-1968,"Adjust"]+
+                                  (Beta^7)*W2001*Inlfation[2001-1968,"Adjust"],
+                                Prior_Wage=W1985*Inlfation[1985-1968,"Adjust"],
+                              Age_Group = cut(Age1987,c(18,25,30,35,40,45,50,55,60)))
+MfgSet1987$NTRRate = NTRRate$NTR.GAP[match(MfgSet1987$V14155,NTRRate$Census.1970)]
+#MfgSet1987$NTRRate[is.na(MfgSet1987$NTRRate)] <-0
+MfgSet1987$NTR_Group <- ifelse(MfgSet1987$NTRRate>0.35, 1, 0)
+
+
+which(MfgSet1987$SumWage < 30000)
+#which(MfgSet1987$SumWage == 0)
+#MfgSet1987 <- MfgSet1987 %>% filter(SumWage<1000000)
+#MfgSet1987 <- MfgSet1987 %>% filter(SumWage>120000)
+MfgSet1987 <- MfgSet1987 %>% filter(SumWage != 0)
+MfgSet1987 <- MfgSet1987 %>% filter(Prior_Wage != 0)
+#MfgSet1987 <- MfgSet1987 %>% filter(Age1987<=40 & Age1987>35 )
+#MfgSet1987 <- MfgSet1987[-c(227,285),]
+MfgSet1987NA <- MfgSet1987[!is.na(MfgSet1987$SumWage), ]
+MfgSet1987NA <- MfgSet1987NA[!is.na(MfgSet1987NA$Prior_Wage), ]
+MfgSet1987NA$S_P <- MfgSet1987NA$SumWage/MfgSet1987NA$Prior_Wage
+MfgSet1987NA <- MfgSet1987NA %>% filter(S_P < 30)
+SumStats1987 <- MfgSet1987NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage/Prior_Wage),N=n(),SD=sd(SumWage/Prior_Wage))
+
+SumStats1987
+ii=8
+((SumStats2003$Mean[ii]-SumStats1987$Mean[ii])/(
+  sqrt((SumStats2003$Var[ii]^2)/SumStats2003$N[ii]+(SumStats1987$SD[ii]^2)/SumStats1987$N[ii])))
+
+# %>% filter(V14115==1 & V14612==1)
+MfgSet1987UI <- MfgSet87 %>% filter(V14115==1 & V14612==1) %>% mutate(SumWage = (W1987+UI1987)*Inlfation[1987-1968,"Adjust"]+
+                                                                      Beta*(W1989+UI1989)*Inlfation[1989-1968,"Adjust"]+
+                                                                      (Beta^2)*(W1991+UI1991)*Inlfation[1991-1968,"Adjust"]+
+                                                                      (Beta^3)*(W1993+UI1993)*Inlfation[1993-1968,"Adjust"]+
+                                                                      (Beta^4)*(W1995+UI1995)*Inlfation[1995-1968,"Adjust"]+
+                                                                      (Beta^5)*(W1997+UI1997)*Inlfation[1997-1968,"Adjust"]+
+                                                                      (Beta^6)*(W1999+UI1999)*Inlfation[1999-1968,"Adjust"]+
+                                                                      (Beta^7)*(W2001+UI2001)*Inlfation[2001-1968,"Adjust"],
+                                                                    Age_Group = cut(Age1987,c(24,30,35,40,45,50,55,60)))
+
+MfgSet1987UI$NTRRate = NTRRate$NTR.GAP[match(MfgSet1987UI$V14155,NTRRate$Census.1970)]
+#MfgSet1987$NTRRate[is.na(MfgSet1987$NTRRate)] <-0
+MfgSet1987UI$NTR_Group <- ifelse(MfgSet1987UI$NTRRate>0.35, 1, 0)
+
+which(MfgSet1987UI$SumWage > 1500000)
+#MfgSet1987UI <- MfgSet1987UI[-c(188,238),]
+MfgSet1987UI <- MfgSet1987UI %>% filter(SumWage !=0)
+MfgSet1987NAUI <- MfgSet1987UI[!is.na(MfgSet1987UI$SumWage), ]
+SumStats1987UI <- MfgSet1987NAUI %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),Med=median(SumWage),N=n(),
+                                                                       Var=sd(SumWage))
+SumStats1987UI
+
+
+
+
+MfgSet1981 <- MfgSet81%>% filter(V7659==1 & V8099==1) %>% mutate(SumWage = W1981*Inlfation[1981-1968,"Adjust"]+
+                                    Beta*W1983*Inlfation[1983-1968,"Adjust"]+
+                                    (Beta^2)*W1985*Inlfation[1985-1968,"Adjust"]+
+                                    (Beta^3)*W1987*Inlfation[1987-1968,"Adjust"]+
+                                    (Beta^4)*W1989*Inlfation[1989-1968,"Adjust"]+
+                                    (Beta^5)*W1991*Inlfation[1991-1968,"Adjust"]+
+                                    (Beta^6)*W1993*Inlfation[1993-1968,"Adjust"]+
+                                    (Beta^7)*W1995*Inlfation[1995-1968,"Adjust"],
+                                  Age_Group = cut(Age1981,c(18,25,30,35,40,45,50,55,60)))
+MfgSet1981NA <- MfgSet1981[!is.na(MfgSet1981$SumWage), ]
+SumStats1981 <- MfgSet1981NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+SumStats1981
+
+MfgSet1969 <- MfgSet69 %>% mutate(SumWage = W1969*Inlfation[1969-1968,"Adjust"]+
+                                    Beta*W1971*Inlfation[1971-1968,"Adjust"]+
+                                    (Beta^2)*W1973*Inlfation[1973-1968,"Adjust"]+
+                                    (Beta^3)*W1975*Inlfation[1975-1968,"Adjust"]+
+                                    (Beta^4)*W1977*Inlfation[1977-1968,"Adjust"]+
+                                    (Beta^5)*W1979*Inlfation[1979-1968,"Adjust"]+
+                                    (Beta^6)*W1981*Inlfation[1981-1968,"Adjust"]+
+                                    (Beta^7)*W1983*Inlfation[1983-1968,"Adjust"],
+                                  Age_Group = cut(Age1969,c(18,25,30,35,40,45,50,55,60)))
+MfgSet1969NA <- MfgSet1969[!is.na(MfgSet1969$SumWage), ]
+SumStats1969 <- MfgSet1969NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+SumStats1969
+
+
+
+MfgSet1973 <- MfgSet73%>% filter(V3096==1 & V3300==1) %>% mutate(SumWage = W1973*Inlfation[1973-1968,"Adjust"]+
+                                    W1975*Inlfation[1975-1968,"Adjust"]+
+                                    W1977*Inlfation[1977-1968,"Adjust"]+
+                                    W1979*Inlfation[1979-1968,"Adjust"]+
+                                    W1981*Inlfation[1981-1968,"Adjust"]+
+                                    W1983*Inlfation[1983-1968,"Adjust"]+
+                                    W1985*Inlfation[1985-1968,"Adjust"]+
+                                    W1987*Inlfation[1987-1968,"Adjust"],
+                                  Age_Group = cut(Age1973,c(18,25,30,35,40,45,50,55,60)))
+#which(MfgSet1987$W1987 > 1000000)
+MfgSet1973NA <- MfgSet1973[!is.na(MfgSet1973$SumWage), ]
+SumStats1973 <- MfgSet1973NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+SumStats1973
+
+#%>% filter(ER21018==1 & ER23426==1) 
+Rest2003 <- Rest03%>% mutate(SumWage = W2003*Inlfation[2003-1968,"Adjust"]+
+                                    Beta*W2005*Inlfation[2005-1968,"Adjust"]+
+                                (Beta^2)*W2007*Inlfation[2007-1968,"Adjust"]+
+                                (Beta^3)*W2009*Inlfation[2009-1968,"Adjust"]+
+                                (Beta^4)*W2011*Inlfation[2011-1968,"Adjust"]+
+                                (Beta^5)*W2013*Inlfation[2013-1968,"Adjust"]+
+                                (Beta^6)*W2015*Inlfation[2015-1968,"Adjust"]+
+                                (Beta^7)*W2017*Inlfation[2017-1968,"Adjust"],
+                                  Age_Group = cut(Age2003,c(18,25,30,35,40,45,50,55,60)))
+which(Rest2003$W2003 > 1000000)
+Rest2003NA <- Rest2003[!is.na(Rest2003$SumWage), ]
+RestSumStats2003 <- Rest2003NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats2003
+
+Rest2003UI <- Rest03%>% filter(ER21018==1 & ER23426==1) %>% mutate(SumWage = (W2003+UI2003)*Inlfation[2003-1968,"Adjust"]+
+                                                                        Beta*(W2005+UI2005)*Inlfation[2005-1968,"Adjust"]+
+                                                                        (Beta^2)*(W2007+UI2007)*Inlfation[2007-1968,"Adjust"]+
+                                                                        (Beta^3)*(W2009+UI2009)*Inlfation[2009-1968,"Adjust"]+
+                                                                        (Beta^4)*(W2011+UI2011)*Inlfation[2011-1968,"Adjust"]+
+                                                                        (Beta^5)*(W2013+UI2013)*Inlfation[2013-1968,"Adjust"]+
+                                                                        (Beta^6)*(W2015+UI2015)*Inlfation[2015-1968,"Adjust"]+
+                                                                        (Beta^7)*(W2017+UI2017)*Inlfation[2017-1968,"Adjust"],
+                                                                      Age_Group = cut(Age2003,c(18,25,30,35,40,45,50,55,60)))
+which(Rest2003UI$W2003 > 1000000)
+Rest2003NAUI <- Rest2003UI[!is.na(Rest2003UI$SumWage), ]
+RestSumStats2003UI <- Rest2003NAUI %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats2003UI
+
+
+Rest1987 <- Rest87 %>% filter(V14115==1 & V14612==1) %>% mutate(SumWage = W1987*Inlfation[1987-1968,"Adjust"]+
+                                    Beta*W1989*Inlfation[1989-1968,"Adjust"]+
+                                (Beta^2)*W1991*Inlfation[1991-1968,"Adjust"]+
+                                (Beta^3)*W1993*Inlfation[1993-1968,"Adjust"]+
+                                (Beta^4)*W1995*Inlfation[1995-1968,"Adjust"]+
+                                (Beta^5)*W1997*Inlfation[1997-1968,"Adjust"]+
+                                (Beta^6)*W1999*Inlfation[1999-1968,"Adjust"]+
+                                (Beta^7)*W2001*Inlfation[2001-1968,"Adjust"],
+                                  Age_Group = cut(Age1987,c(18,25,30,35,40,45,50,55,60)))
+which(Rest1987$SumWage > 2000000)
+Rest1987NA <- Rest1987[!is.na(Rest1987$SumWage), ]
+RestSumStats1987 <- Rest1987NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats1987
+
+Rest1987UI <- Rest87 %>% filter(V14115==1 & V14612==1) %>% mutate(SumWage = (W1987+UI1987)*Inlfation[1987-1968,"Adjust"]+
+                                                                    Beta*(W1989+UI1989)*Inlfation[1989-1968,"Adjust"]+
+                                                                    (Beta^2)*(W1991+UI1991)*Inlfation[1991-1968,"Adjust"]+
+                                                                    (Beta^3)*(W1993+UI1993)*Inlfation[1993-1968,"Adjust"]+
+                                                                    (Beta^4)*(W1995+UI1995)*Inlfation[1995-1968,"Adjust"]+
+                                                                    (Beta^5)*(W1997+UI1997)*Inlfation[1997-1968,"Adjust"]+
+                                                                    (Beta^6)*(W1999+UI1999)*Inlfation[1999-1968,"Adjust"]+
+                                                                    (Beta^7)*(W2001+UI2001)*Inlfation[2001-1968,"Adjust"],
+                                                                  Age_Group = cut(Age1987,c(18,25,30,35,40,45,50,55,60)))
+which(Rest1987UI$SumWage > 2000000)
+Rest1987NAUI <- Rest1987UI[!is.na(Rest1987UI$SumWage), ]
+RestSumStats1987UI <- Rest1987NAUI %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats1987UI
+
+
+Rest1981 <- Rest81 %>% filter(V7659==1 & V8099==1) %>% mutate(SumWage = W1981*Inlfation[1981-1968,"Adjust"]+
+                                Beta*W1983*Inlfation[1983-1968,"Adjust"]+
+                                (Beta^2)*W1985*Inlfation[1985-1968,"Adjust"]+
+                                (Beta^3)*W1987*Inlfation[1987-1968,"Adjust"]+
+                                (Beta^4)*W1989*Inlfation[1989-1968,"Adjust"]+
+                                (Beta^5)*W1991*Inlfation[1991-1968,"Adjust"]+
+                                (Beta^6)*W1993*Inlfation[1993-1968,"Adjust"]+
+                                (Beta^7)*W1995*Inlfation[1995-1968,"Adjust"],
+                              Age_Group = cut(Age1981,c(18,25,30,35,40,45,50,55,60)))
+Rest1981NA <- Rest1981[!is.na(Rest1981$SumWage), ]
+RestSumStats1981 <- Rest1981NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats1981
+
+
+Rest1973 <- Rest73%>% filter(V3096==1 & V3300==1) %>% mutate(SumWage = W1973*Inlfation[1973-1968,"Adjust"]+
+                                    Beta*W1975*Inlfation[1975-1968,"Adjust"]+
+                                (Beta^2)*W1977*Inlfation[1977-1968,"Adjust"]+
+                                (Beta^3)*W1979*Inlfation[1979-1968,"Adjust"]+
+                                (Beta^4)*W1981*Inlfation[1981-1968,"Adjust"]+
+                                (Beta^5)*W1983*Inlfation[1983-1968,"Adjust"]+
+                                (Beta^6)*W1985*Inlfation[1985-1968,"Adjust"]+
+                                (Beta^7)*W1987*Inlfation[1987-1968,"Adjust"],
+                                  Age_Group = cut(Age1973,c(18,25,30,35,40,45,50,55,60)))
+#which(MfgSet1987$W1987 > 1000000)
+Rest1973NA <- Rest1973[!is.na(Rest1973$SumWage), ]
+RestSumStats1973 <- Rest1973NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats1973
+
+Rest1969 <- Rest69 %>% mutate(SumWage = W1969*Inlfation[1969-1968,"Adjust"]+
+                                Beta*W1971*Inlfation[1971-1968,"Adjust"]+
+                                (Beta^2)*W1973*Inlfation[1973-1968,"Adjust"]+
+                                (Beta^3)*W1975*Inlfation[1975-1968,"Adjust"]+
+                                (Beta^4)*W1977*Inlfation[1977-1968,"Adjust"]+
+                                (Beta^5)*W1979*Inlfation[1979-1968,"Adjust"]+
+                                (Beta^6)*W1981*Inlfation[1981-1968,"Adjust"]+
+                                (Beta^7)*W1983*Inlfation[1983-1968,"Adjust"],
+                              Age_Group = cut(Age1969,c(18,25,30,35,40,45,50,55,60)))
+#which(MfgSet1987$W1987 > 1000000)
+Rest1969NA <- Rest1969[!is.na(Rest1969$SumWage), ]
+RestSumStats1969 <- Rest1969NA %>% group_by(Age_Group) %>% summarize(Mean = mean(SumWage),N=n())
+RestSumStats1969
+
+
+RegData2003<- data.frame(cbind(MfgSet2003UI$SumWage,MfgSet2003UI$NTRRate,MfgSet2003UI$NTR_Group,MfgSet2003UI$Age2003))
+RegData2003$Dummy = 1
+RegData1987<- data.frame(cbind(MfgSet1987UI$SumWage,MfgSet1987UI$NTRRate,MfgSet1987UI$NTR_Group,MfgSet1987UI$Age1987))
+RegData1987$Dummy = 0
+RegData <- data.frame(rbind(RegData2003,RegData1987))
+myreg1 <- lm(X1~ X4+I(X4^2)+X2+X4*Dummy*X2+I(X4^2)*X2+Dummy , data=RegData1987)
+summary(myreg1)
+
+
+ChangesRest<-RestSumStats2003$Mean[1:8]/RestSumStats1987$Mean[1:8]
+names(ChangesRest) <- RestSumStats2003$Age_Group[1:8]
+ChangesEarlierRest<-RestSumStats2003$Mean[1:8]/RestSumStats1973$Mean[1:8]
+names(ChangesRest) <- RestSumStats2003$Age_Group[1:8]
+
+
+ChangesMfg<-SumStats2003$Mean[1:8]/SumStats1987$Mean[1:8]
+names(ChangesMfg) <- SumStats2003$Age_Group[1:7]
+
+ChangesMfg_NTR<-SumStats2003$Mean[1:16]/SumStats1987$Mean[1:16]
+names(ChangesMfg_NTR) <- SumStats2003$Age_Group[1:16]
+
+ChangesMfg_NTR93<-SumStats1993$Mean[1:14]/SumStats1987$Mean[1:14]
+names(ChangesMfg_NTR93) <- SumStats1993$Age_Group[1:14]
+
+ChangesMfg_All_35<-SumStats2003$Mean[1:16]/SumStats1987$Mean[1:16]
+names(ChangesMfg_All_35) <- SumStats2003$Age_Group[1:16]
+
+Split1<- log(ChangesMfg_All_35[c(TRUE, FALSE)])
+Split2<- log(ChangesMfg_All_35[c(FALSE,TRUE)])
+
+ChangesMfg_MW_35<-SumStats2003$Mean[1:16]/SumStats1987$Mean[1:16]
+names(ChangesMfg_MW_35) <- SumStats2003$Age_Group[1:16]
+
+ChangesMfg<-SumStats2003UI$Mean[1:16]/SumStats1987UI$Mean[1:16]
+names(ChangesMfg) <- SumStats2003UI$Age_Group[1:16]
+
+ChangesMfg<-SumStats2003UI$Mean[1:8]/SumStats1987UI$Mean[1:8]
+names(ChangesMfg) <- SumStats2003$Age_Group[1:8]
+
+t=3
+(SumStats2003UI$Mean[t]-SumStats1987UI$Mean[t])/sqrt(
+  SumStats2003UI$Var[t]^2/SumStats2003UI$N[t]+SumStats1987UI$Var[t]^2/SumStats1987UI$N[t])
+
+
+ChangesEarlierMfg<-SumStats2003$Mean[1:8]/SumStats1973$Mean[1:8]
+names(ChangesRest) <- RestSumStats2003$Age_Group[1:8]
+
+ChangesMfgTime<-SumStats1987$Mean[1:8]/SumStats1973$Mean[1:8]
+names(ChangesRest) <- RestSumStats2003$Age_Group[1:8]
+ChangesRestTime<-RestSumStats1987$Mean[1:8]/RestSumStats1973$Mean[1:8]
+names(ChangesRest) <- RestSumStats2003$Age_Group[1:8]
+
+ChangeMfg81  <-SumStats2003$Mean[1:8]/SumStats1981$Mean[1:8]
+ChangeRest81 <-RestSumStats2003$Mean[1:8]/RestSumStats1981$Mean[1:8]
+
+ChangeMfg69  <-SumStats2003$Mean[1:8]/SumStats1969$Mean[1:8]
+ChangeRest69 <-RestSumStats2003$Mean[1:8]/RestSumStats1969$Mean[1:8]
+
+ChangesMfg93 <-SumStats1993$Mean[1:8]/SumStats1981$Mean[1:8]
+
+
+
+ChangeMfg03UI <-SumStats2003UI$Mean[1:8]/SumStats1987UI$Mean[1:8]
+ChangeRest03UI <- RestSumStats2003UI$Mean[1:8]/RestSumStats1987UI$Mean[1:8]
+
+Results<- cbind(read.table(text = names(Split1)),Split1,Split2)
+ggplot(Results, aes(x=V1,group=1))+geom_point(aes(y=Split1))+
+  geom_point(aes(y=Split1),color='red')+geom_point(aes(y=Split2),color='green')+xlab("Age")+ylab("Cumulative Income Change")+
+  geom_line(aes(y=Split1,color="Mfg-High"))+geom_line(aes(y=Split2,color="Mfg-Low"))+
+  scale_colour_manual(values=c("black","blue"))+labs(color='')  
+
+p + scale_fill_discrete(name = "New Legend Title")
+
+ggplot(Results, aes(x=V1,group=1))+
+  geom_point(aes(y=log(ChangesMfg93)),color='red',size=3)+xlab("Age")+ylab("PDV Change")+
+  geom_line(y=log(ChangesMfg93),size=1,color='blue')+geom_hline(yintercept=0)
+
+SE_Errors<- sqrt(SumStats2003$Var[1:8]^2/SumStats2003$N[1:8]+SumStats1987$SD[1:8]^2/SumStats1987$N[1:8])
+SumStats2003$Mean[1:8]- SumStats1987$Mean[1:8]
+ggplot(Results, aes(x=V1))+geom_point(aes(y=ChangesMfg))+
+  geom_point(aes(y=ChangesMfg93),color='red')
+ggplot(Results, aes(x=V1))+geom_point(aes(y=ChangesRestTime))+
+  geom_point(aes(y=ChangesMfgTime),color='red')
+ggplot(Results, aes(x=V1))+geom_point(aes(y=ChangesMfg-ChangesRest))
+  
+
+
+SumStats1987
+SumStats2003
